@@ -137,6 +137,33 @@ class Toastify {
       return this;
     }
 
+    startToast() {
+      var self = this;
+      // add back the timeout
+      this.toastElement.timeOutValue = window.setTimeout(
+        () => {
+          // Remove the toast from DOM
+          this._removeElement(this.toastElement);
+        },
+        this.options.duration
+      );
+
+      // Restart the progress bar animation
+      var progressBar = this.toastElement.querySelector('.toast-progress');
+      progressBar.style.animationPlayState = '';
+      var newProgressBar = progressBar.cloneNode(true);
+      progressBar.parentNode.replaceChild(newProgressBar, progressBar);
+    }
+
+    pauseToast() {
+      // Stop countdown
+      window.clearTimeout(this.toastElement.timeOutValue);
+
+      // Pause the progress bar animation
+      var progressBar = this.toastElement.querySelector('.toast-progress');
+      progressBar.style.animationPlayState = 'paused';
+    }
+
     /**
      * Hide the toast
      * @public
@@ -291,20 +318,14 @@ class Toastify {
         divElement.addEventListener(
           "mouseover",
           (event) => {
-            window.clearTimeout(divElement.timeOutValue);
+            this.pauseToast();
           }
         )
         // add back the timeout
         divElement.addEventListener(
           "mouseleave",
           () => {
-            divElement.timeOutValue = window.setTimeout(
-              () => {
-                // Remove the toast from DOM
-                this._removeElement(divElement);
-              },
-              this.options.duration
-            )
+            this.startToast();
           }
         )
       }
@@ -315,17 +336,9 @@ class Toastify {
           "visibilitychange",
           (event) => {
             if (document.visibilityState === 'visible') {
-              // add back the timeout
-              divElement.timeOutValue = window.setTimeout(
-                () => {
-                  // Remove the toast from DOM
-                  this._removeElement(divElement);
-                },
-                this.options.duration
-              )
+              this.startToast();
             } else {
-              // stop countdown
-              window.clearTimeout(divElement.timeOutValue);
+              this.pauseToast();
             }
           }
         )

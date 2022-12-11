@@ -210,21 +210,15 @@
         // stop countdown
         divElement.addEventListener(
           "mouseover",
-          function(event) {
-            window.clearTimeout(divElement.timeOutValue);
+          function() {
+            self.pauseToast();
           }
         )
         // add back the timeout
         divElement.addEventListener(
           "mouseleave",
           function() {
-            divElement.timeOutValue = window.setTimeout(
-              function() {
-                // Remove the toast from DOM
-                self.removeElement(divElement);
-              },
-              self.options.duration
-            )
+            self.startToast();
           }
         )
       }
@@ -236,17 +230,9 @@
           "visibilitychange",
           function() {
             if (document.visibilityState === 'visible') {
-              // add back the timeout
-              divElement.timeOutValue = window.setTimeout(
-                function() {
-                  // Remove the toast from DOM
-                  self.removeElement(divElement);
-                },
-                  self.options.duration
-              )
+              self.startToast();
             } else {
-              // stop countdown
-              window.clearTimeout(divElement.timeOutValue);
+              self.pauseToast();
             }
           }
         )
@@ -341,6 +327,33 @@
 
       // Supporting function chaining
       return this;
+    },
+
+    startToast: function() {
+      var self = this;
+      // add back the timeout
+      this.toastElement.timeOutValue = window.setTimeout(
+        function() {
+          // Remove the toast from DOM
+          self.removeElement(self.toastElement);
+        },
+          self.options.duration
+      );
+
+      // Restart the progress bar animation
+      var progressBar = this.toastElement.querySelector('.toast-progress');
+      progressBar.style.animationPlayState = '';
+      var newProgressBar = progressBar.cloneNode(true);
+      progressBar.parentNode.replaceChild(newProgressBar, progressBar);
+    },
+
+    pauseToast: function() {
+      // Stop countdown
+      window.clearTimeout(this.toastElement.timeOutValue);
+
+      // Pause the progress bar animation
+      var progressBar = this.toastElement.querySelector('.toast-progress');
+      progressBar.style.animationPlayState = 'paused';
     },
 
     hideToast: function() {
